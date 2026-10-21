@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added — 2026-10-21
+
+- Makefile: `ci-check` target that runs all five CI checks in order
+  (cargo fmt check, cargo clippy, cargo test, backend lint, backend test) (#86).
+  Fails fast on the first error. Added to `.PHONY` and `help` output.
+
+- CONTRIBUTING.md: "Running All CI Checks Locally" section documenting
+  `make ci-check` and listing the five steps it runs (#86).
+
+
 ### Added — 2026-10-19
 
 - docs/api.md: REST API reference for the backend (#60). One

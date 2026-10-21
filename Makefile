@@ -5,7 +5,7 @@ CONTRACTS := vesting multisig token
 NETWORK   ?= testnet
 SOURCE    ?= $(shell grep SOURCE_ACCOUNT .env 2>/dev/null | cut -d= -f2)
 
-.PHONY: help setup build build-optimized test fmt lint clean \
+.PHONY: help setup build build-optimized test fmt lint ci-check clean \
         deploy-testnet deploy-mainnet fund \
         backend-install backend-dev backend-start backend-test
 
@@ -21,6 +21,7 @@ help:
 	@echo "    make test             Run all contract unit tests"
 	@echo "    make fmt              Format Rust code"
 	@echo "    make lint             fmt-check + clippy"
+	@echo "    make ci-check         Run all CI checks locally (fmt, clippy, tests, backend)"
 	@echo "    make clean            Remove build artifacts"
 	@echo ""
 	@echo "  Deploy"
@@ -64,6 +65,14 @@ fmt:
 lint:
 	cargo fmt --all -- --check
 	cargo clippy --all --all-targets -- -D warnings
+
+# ── CI check (mirrors all CI jobs locally) ────────────────────────────────────
+ci-check: ## Run all CI checks locally (fmt, clippy, tests, backend lint+test)
+	cargo fmt --all -- --check
+	cargo clippy --all --target wasm32v1-none -- -D warnings
+	cargo test --all --locked
+	cd backend && npm run lint
+	cd backend && npm test
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 clean:
