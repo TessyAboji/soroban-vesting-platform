@@ -6,14 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added — 2026-10-21
+### Fixed — 2026-10-21
 
-- Makefile: `ci-check` target that runs all five CI checks in order
-  (cargo fmt check, cargo clippy, cargo test, backend lint, backend test) (#86).
-  Fails fast on the first error. Added to `.PHONY` and `help` output.
+- Makefile: `setup` target now installs `wasm32v1-none` instead of the
+  outdated `wasm32-unknown-unknown` target (#59).
 
-- CONTRIBUTING.md: "Running All CI Checks Locally" section documenting
-  `make ci-check` and listing the five steps it runs (#86).
+- Makefile: `build` target now uses `stellar contract build` instead of
+  `cargo build --all --target wasm32-unknown-unknown --release` (#59).
+
+- Makefile: `build-optimized` target now references
+  `target/wasm32v1-none/release/` instead of
+  `target/wasm32-unknown-unknown/release/` (#59).
+
+- Makefile: `lint` target now runs
+  `cargo clippy --all --target wasm32v1-none -- -D warnings` to match the
+  exact CI invocation, replacing `--all-targets` which diverged from CI (#59).
 
 
 ### Added — 2026-10-19
