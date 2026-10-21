@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Tests — 2026-10-21
+
+- contracts/vesting/src/lib.rs: `test_revoke_after_full_vest` (#57).
+  Covers the edge case where revoke() is called after total_duration has
+  elapsed. Creates a schedule with cliff_duration=0 and total_duration=100,
+  advances ledger to start+200 (past end), then calls revoke(). Asserts
+  return value is 0 (no unvested tokens), beneficiary balance equals
+  total_amount (all vested tokens paid out on revoke), recipient balance is 0,
+  and schedule status is Revoked.
+
+
 ### Added — 2026-10-19
 
 - docs/api.md: REST API reference for the backend (#60). One
