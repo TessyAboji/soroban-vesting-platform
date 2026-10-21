@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Tests — 2026-10-21
+
+- contracts/vesting/src/lib.rs: `test_claim_on_completed_schedule_panics` (#58).
+  Covers the double-claim path on a Completed schedule. Creates a schedule with
+  no cliff and short duration, advances time past total_duration, calls claim()
+  once (schedule becomes Completed, returns total_amount), then calls claim() a
+  second time which must panic with the exact message "schedule is not active".
+  Annotated with `#[should_panic(expected = "schedule is not active")]`.
+
+### Fixed — 2026-10-21
+
+- contracts/vesting/src/lib.rs: `claim()` now uses `panic!("schedule is not
+  active")` instead of `panic_with_error!(&env, VestingError::ScheduleNotActive)`
+  for the non-Active status guard (#58). This produces a human-readable panic
+  message that tests can match with `#[should_panic(expected = "schedule is not
+  active")]`, consistent with the documented error message in
+  contracts/vesting/README.md.
+
+
 ### Added — 2026-10-19
 
 - docs/api.md: REST API reference for the backend (#60). One
