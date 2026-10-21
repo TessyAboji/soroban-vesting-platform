@@ -6,15 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Tests — 2026-10-21
+### Fixed — 2026-10-21
 
-- contracts/vesting/src/lib.rs: `test_revoke_after_full_vest` (#57).
-  Covers the edge case where revoke() is called after total_duration has
-  elapsed. Creates a schedule with cliff_duration=0 and total_duration=100,
-  advances ledger to start+200 (past end), then calls revoke(). Asserts
-  return value is 0 (no unvested tokens), beneficiary balance equals
-  total_amount (all vested tokens paid out on revoke), recipient balance is 0,
-  and schedule status is Revoked.
+- Makefile: `setup` target now installs `wasm32v1-none` instead of the
+  outdated `wasm32-unknown-unknown` target (#59).
+
+- Makefile: `build` target now uses `stellar contract build` instead of
+  `cargo build --all --target wasm32-unknown-unknown --release` (#59).
+
+- Makefile: `build-optimized` target now references
+  `target/wasm32v1-none/release/` instead of
+  `target/wasm32-unknown-unknown/release/` (#59).
+
+- Makefile: `lint` target now runs
+  `cargo clippy --all --target wasm32v1-none -- -D warnings` to match the
+  exact CI invocation, replacing `--all-targets` which diverged from CI (#59).
 
 
 ### Added — 2026-10-19

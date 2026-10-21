@@ -198,7 +198,7 @@ impl VestingContract {
         schedule.beneficiary.require_auth();
 
         if schedule.status != ScheduleStatus::Active {
-            panic_with_error!(&env, VestingError::ScheduleNotActive);
+            panic!("schedule is not active");
         }
 
         let now = env.ledger().timestamp();
@@ -1273,6 +1273,56 @@ mod tests {
         env.ledger().with_mut(|l| l.timestamp = start + 50);
         vesting.revoke(&id, &admin);
         vesting.claim(&id); // must panic with VestingError::ScheduleNotActive
+    }
+
+    // ── claim on a completed schedule must error with "schedule is not active"
+
+    /// After the beneficiary claims the final tranche of a vesting schedule,
+    /// the schedule status transitions to Completed. A subsequent call to
+    /// claim() on that schedule must panic with "schedule is not active".
+    ///
+    /// Schedule: cliff_duration=0, total_duration=100, total_amount=100_000
+    /// 1. Advance to start + 100 (fully vested).
+    /// 2. First claim() returns 100_000 — schedule transitions to Completed.
+    /// 3. Second claim() must panic with "schedule is not active".
+    #[test]
+    #[should_panic(expected = "schedule is not active")]
+    fn test_claim_on_completed_schedule_panics() {
+        let (env, vesting_id, _admin, beneficiary, funder) = setup();
+        let token = new_token(&env, &funder, 100_000);
+        let vesting = VestingContractClient::new(&env, &vesting_id);
+        let start = env.ledger().timestamp();
+
+        let id = vesting.create_schedule(&CreateScheduleParams {
+            from: funder.clone(),
+            beneficiary: beneficiary.clone(),
+            token_address: token.clone(),
+            total_amount: 100_000,
+            start_time: start,
+            cliff_duration: 0,
+            total_duration: 100,
+        });
+
+        // Advance past full duration so all tokens are claimable.
+        env.ledger().with_mut(|l| l.timestamp = start + 100);
+
+        // First claim succeeds and returns the full total_amount.
+        let first_claim = vesting.claim(&id);
+        assert_eq!(
+            first_claim, 100_000,
+            "first claim must return the full total_amount"
+        );
+
+        // Schedule is now Completed.
+        let sched = vesting.get_schedule(&id);
+        assert_eq!(
+            sched.status,
+            ScheduleStatus::Completed,
+            "schedule must be Completed after claiming all tokens"
+        );
+
+        // Second claim on a Completed schedule must panic with "schedule is not active".
+        vesting.claim(&id);
     }
 
     // ── nothing to claim before cliff ────────────────────────────────────────
